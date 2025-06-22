@@ -1,0 +1,508 @@
+/* ───────── Root palette ───────── */
+:root {
+	--bg-1: #f8fafc; /* viewport              */
+	--bg-2: #ffffff; /* nodes / panels        */
+	--bg-3: #f1f5f9; /* sidebar + inputs      */
+	--fg-1: #1f2937;
+	--fg-2: #64748b;
+	--brand: #6366f1;
+	--brand-hover: #4f46e5;
+	--accent: #e11d48;
+	--green: #10b981;
+
+	--radius: 12px;
+	--shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+	--t: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+
+	--c-border-light: #e2e8f0;
+	--c-line: var(--brand);
+
+	/* console */
+	--c-console-bg: #0f172acc;
+	--c-console-bar: #1e293b;
+	--red: #e11d48;
+	--red-hover: #be123c;
+	--red-active: #9f1239;
+}
+
+/* ───────── Base tags ──────────── */
+* {
+	box-sizing: border-box;
+	color: var(--fg-1);
+}
+html,
+body {
+	margin: 0;
+	height: 100%;
+	overflow: hidden;
+	font: 14px/1.5 "Inter", system-ui;
+}
+
+/* ───────── Sidebar ────────────── */
+.sidebar {
+	position: fixed;
+	top: 50%;
+	left: 12px;
+	transform: translateY(-50%);
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	padding: 8px;
+	background: var(--bg-3);
+	border-radius: var(--radius);
+	box-shadow: var(--shadow);
+	z-index: 30;
+}
+.sidebar button,
+.file-btn {
+	width: 40px;
+	height: 40px;
+	border: none;
+	border-radius: 8px;
+	background: var(--bg-2);
+	display: grid;
+	place-items: center;
+	cursor: pointer;
+	transition: background var(--t), transform var(--t);
+}
+.sidebar svg {
+	width: 20px;
+	height: 20px;
+	stroke: var(--fg-2);
+	stroke-width: 2;
+	fill: none;
+	pointer-events: none;
+}
+.sidebar button:hover:not(.toggle.active),
+.file-btn:hover {
+	background: var(--bg-1);
+	transform: translateY(-2px);
+}
+.toggle.active {
+	background: var(--brand);
+}
+.toggle.active svg {
+	stroke: #fff;
+}
+
+.file-btn input {
+	display: none;
+}
+hr {
+	width: 24px;
+	border: none;
+	border-top: 1px solid var(--c-border-light);
+	margin: 4px auto;
+}
+
+/* ───────── Editor / panning ───── */
+.editor {
+	width: 100%;
+	height: 100%;
+	background: var(--bg-1);
+	cursor: grab;
+	transition: background var(--t);
+}
+.editor.grabbing {
+	cursor: grabbing;
+}
+.editor.panning {
+	background: var(--bg-1);
+} /* остаётся декоративным */
+
+/* ───────── Canvas / Wires order ─ */
+#wires {
+	position: absolute;
+	inset: 0;
+	z-index: 0;
+	overflow: visible;
+	pointer-events: none;
+}
+#canvas {
+	position: absolute;
+	inset: 0;
+	z-index: 1;
+}
+
+/* ───────── SVG-линии ──────────── */
+.link {
+	stroke: var(--brand);
+	stroke-width: 2.5;
+	marker-end: url(#arrow);
+	pointer-events: none;
+	transition: stroke var(--t);
+}
+.link.hover {
+	stroke: var(--brand-hover);
+}
+.link-hit {
+	stroke: transparent;
+	stroke-width: 26;
+	stroke-linecap: round;
+	cursor: pointer;
+	pointer-events: stroke;
+}
+
+/* ───────── Node ───────────────── */
+.node {
+	width: 260px;
+	position: absolute;
+	border-radius: var(--radius);
+	background: var(--bg-2);
+	box-shadow: var(--shadow);
+	border: 1px solid rgba(0, 0, 0, 0.04);
+	overflow: hidden;
+	transition: box-shadow var(--t), transform var(--t);
+}
+.node:hover {
+	box-shadow: 0 6px 24px rgba(0, 0, 0, 0.08);
+}
+.node.dragging {
+	transition: none;
+	box-shadow: 0 6px 24px rgba(0, 0, 0, 0.16);
+}
+.drag-handle {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	padding: 10px 14px;
+	background: var(--bg-1);
+	cursor: grab;
+}
+.title {
+	flex: 1;
+	border: none;
+	background: transparent;
+	font-weight: 600;
+	font-size: 15px;
+}
+.title.edit {
+	border: 1px solid var(--brand);
+	padding: 2px 6px;
+	border-radius: 6px;
+	background: #fff;
+	color: #000 !important;
+}
+
+.node.start .drag-handle {
+	background: var(--brand);
+}
+.node.start .title {
+	color: #fff;
+}
+
+.del-node {
+	margin-left: -8px !important;
+}
+
+.del,
+.del-node {
+	border: none;
+	outline: none;
+	width: 30px;
+	height: 30px;
+	flex: 0 0 30px;
+	display: grid;
+	place-items: center;
+	background: var(--red);
+	color: #fff;
+	border-radius: 8px;
+	cursor: pointer;
+
+	/* приятная анимация */
+	transition: background 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.12);
+}
+
+.del svg,
+.del-node svg {
+	width: 16px;
+	height: 16px;
+	stroke: #fff;
+	fill: none;
+	pointer-events: none;
+}
+
+/* hover / active */
+.del:hover,
+.del-node:hover {
+	background: var(--red-hover);
+	transform: translateY(-1px);
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.18);
+}
+.del:active,
+.del-node:active {
+	background: var(--red-active);
+	transform: scale(0.95);
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.12);
+}
+
+/* .del-node стоит в заголовке → прижмём к правому краю */
+.del-node {
+	margin-left: auto;
+}
+/* ───────── Content inside node ── */
+.lines,
+.answer-text {
+	width: 100%;
+	border: none;
+	padding: 10px 12px;
+	background: var(--bg-3);
+	resize: vertical;
+	font: 14px/1.5 "Inter", system-ui;
+	min-height: 80px;
+}
+
+/* главное изменение — flex-правила */
+.answer-text {
+	flex: 1 1 auto; /* занимает всё доступное */
+	min-width: 0; /* не даём 0-шринк Firefox’у */
+
+	width: auto; /* width:100% больше не нужно */
+}
+.answers {
+	padding: 0;
+	margin: 0;
+}
+
+.answer {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 6px 4px;
+}
+.answer-port {
+	flex: 0 0 18px;
+	height: 18px;
+	border-radius: 50%;
+	background: var(--fg-2);
+	transition: background var(--t);
+	cursor: pointer;
+}
+.answer-port.connected {
+	background: var(--green);
+}
+
+.add-answer {
+	width: 100%;
+	border: none;
+	background: var(--bg-3);
+	padding: 10px 0;
+	font-weight: 600;
+	cursor: pointer;
+	border-top: 1px solid rgba(0, 0, 0, 0.05);
+	transition: background var(--t);
+}
+.add-answer:hover {
+	background: var(--bg-1);
+}
+
+/* ───────── Panels (variables / scenes) ─ */
+.panel {
+	background: var(--bg-2);
+	border-radius: var(--radius);
+	box-shadow: var(--shadow);
+	padding: 14px;
+	position: fixed;
+	top: 20px;
+	right: 20px;
+	max-width: 280px;
+	max-height: calc(100% - 40px);
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	overflow: auto;
+	transform: translateX(100%);
+	opacity: 0;
+	transition: transform var(--t), opacity var(--t);
+	z-index: 100;
+}
+.panel.open {
+	transform: translateX(0);
+	opacity: 1;
+}
+.panel-title {
+	font-weight: 600;
+}
+
+.var-row,
+li {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+}
+.text-var,
+.cmd-var {
+	border: none;
+	border-radius: 6px;
+	padding: 4px 8px;
+	background: var(--bg-3);
+	font: 12px monospace;
+	cursor: pointer;
+	transition: background var(--t);
+}
+.text-var:hover,
+.cmd-var:hover {
+	background: var(--bg-1);
+}
+
+.scenes-panel ul {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+	max-height: 220px;
+	overflow: auto;
+}
+.scenes-panel li {
+	padding: 4px 8px;
+	border-radius: 6px;
+	cursor: pointer;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	overflow: hidden;
+}
+.scenes-panel li:hover {
+	background: var(--bg-1);
+}
+
+/* ───────── Console ───────────── */
+.console {
+	position: fixed;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	height: 24vh;
+	background: var(--c-console-bg);
+	color: #e2e8f0;
+	backdrop-filter: blur(6px);
+	display: flex;
+	flex-direction: column;
+	transform: translateY(calc(100% + 6px));
+	opacity: 0;
+	pointer-events: none;
+	transition: transform 0.3s ease, opacity 0.3s linear;
+	border-top: 1px solid rgba(255, 255, 255, 0.06);
+	box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.25);
+	z-index: 40;
+}
+.console.open {
+	transform: translateY(0);
+	opacity: 1;
+	pointer-events: auto;
+}
+
+.console header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	background: var(--c-console-bar);
+	padding: 6px 10px;
+	font: 12px monospace;
+	color: #fff;
+}
+
+.console header span {
+	color: inherit;
+}
+.console header button {
+	background: none;
+	border: none;
+	cursor: pointer;
+	color: #fff;
+}
+.console header svg {
+	width: 16px;
+	height: 16px;
+	stroke: #fff;
+	fill: #fff;
+}
+
+.console-content {
+	flex: 1;
+	overflow: auto;
+	padding: 8px 10px;
+	font: 12px monospace;
+}
+.msg-info {
+	color: #38bdf8;
+}
+.msg-warning {
+	color: #facc15;
+}
+.msg-error {
+	color: #f43f5e;
+}
+
+/* ───────── Custom scrollbars ───── */
+/* Firefox */
+/* кастомный scrollbar только внутри «card-панелей» */
+.panel,
+.console-content,
+.scenes-panel ul {
+	scrollbar-width: thin; /* Firefox */
+	scrollbar-color: var(--fg-2) transparent;
+}
+
+.panel::-webkit-scrollbar,
+.console-content::-webkit-scrollbar,
+.scenes-panel ul::-webkit-scrollbar {
+	width: 8px;
+	height: 8px;
+}
+.panel::-webkit-scrollbar-thumb,
+.console-content::-webkit-scrollbar-thumb,
+.scenes-panel ul::-webkit-scrollbar-thumb {
+	background: var(--fg-2);
+	border-radius: 4px;
+}
+.panel::-webkit-scrollbar-thumb:hover,
+.console-content::-webkit-scrollbar-thumb:hover,
+.scenes-panel ul::-webkit-scrollbar-thumb:hover {
+	background: var(--brand-hover);
+}
+.panel::-webkit-scrollbar-track,
+.console-content::-webkit-scrollbar-track,
+.scenes-panel ul::-webkit-scrollbar-track {
+	background: transparent;
+}
+
+.photo-prev {
+	width: 100%;
+	aspect-ratio: 1 / 1;
+	border-radius: 8px;
+	object-fit: cover;
+}
+
+/* все кнопки внутри sidebar теперь позиционируются как "якоря" для tooltip */
+.sidebar button,
+.sidebar .file-btn {
+	position: relative; /* новый */
+}
+
+/* пузырёк */
+.sidebar button[data-tip]::after,
+.sidebar .file-btn[data-tip]::after {
+	content: attr(data-tip);
+	position: absolute;
+	left: calc(100% + 8px);
+	top: 50%;
+	transform: translateY(-50%) scale(0.9);
+	white-space: nowrap;
+	background: var(--fg-1);
+	color: #fff;
+	font-size: 12px;
+	line-height: 1;
+	padding: 4px 8px;
+	border-radius: 6px;
+	opacity: 0;
+	pointer-events: none;
+	box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+	transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+/* появление */
+.sidebar button[data-tip]:hover::after,
+.sidebar .file-btn[data-tip]:hover::after {
+	opacity: 1;
+	transform: translateY(-50%) scale(1);
+}
